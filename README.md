@@ -1,15 +1,91 @@
-# Windows
+# Michael's Readme
+## Debug run
+### vs code setup
+```
+"cwd": "C:\\Users\\Micl\\Desktop\\genaad",
+"env": {
+    "PYTHONPATH": "D:\\workathome\\repos\\dir-assistant"
+},
+// "args": ["models", "download-embed"],
+// "args": ["clear"],
+```
+* cwd: your dotnetEAA root folder as target to generate programs. Generated programs are only pending changes in vs code
+* PYTHONPATH: your dir-assistant's path
+* "args": ["models", "download-embed"] - uncomment to download the embedding model file. Comment it after use
+* "args": ["clear"], - uncomment to clear the cache embedding (clean up the embedding database)
+* In normal run, NO args is required
+
+### Embedding & LLM folder setup
+* in config.py
+```
+CONFIG_FILENAME = "config.toml"
+CONFIG_PATH = "D:\\Repos\\Labs\\ChatGPT\\dir-assistant"
+```
+* values in config.py will be populated to config.toml in this path
+```
+CONFIG_DEFAULTS = {
+    "GLOBAL_IGNORES": [ 
+        "\\packages.lock.json", 
+        ".\\package.json", 
+        ".\\package-lock.json", 
+        ".\\.git", 
+        ...
+        "\\GridCommon2\\",
+    ],
+    "ACTIVE_EMBED_IS_LOCAL": True,
+    "MODELS_PATH": "D:\\Repos\\Labs\\ChatGPT\\dir-assistant\\models\\",
+    "EMBED_MODEL": "nomic-embed-text-v1.5.Q5_K_M.gguf",
+    "LITELLM_EMBED_MODEL": "nomic-embed-text-v1.5.Q5_K_M",
+}
+```
+* setup Global Ignores to reduce the embedding to the minimum. Too many unrelated code may confuse LLM
+* set embedding to local and set the embedding model and path
+
+### LLM model and API keys setup
+* setup below two Windows environment variables: 'Azure_API_Key' & 'Deepseek_API_Key'
+```
+    "ACTIVE_MODEL_IS_LOCAL": False,
+  # "LITELLM_MODEL": "deepseek/deepseek-chat",
+    "LITELLM_MODEL": "azure/o1-mini",
+    "LITELLM_CONTEXT_SIZE": 128000,
+    "LITELLM_API_KEYS": {
+        "DEEPSEEK_API_KEY": getenv('Deepseek_API_Key'),
+        "Azure_API_Key": getenv('Azure_API_Key'),
+    },
+```
+* set LLM to non-local (API call). Set your LLM model, context window size and API Key
+
+## Test run: Target testing solution: dotnetEAA API solution
+* Embedding model setup (only need to setup ONCE)
+    * using "args": ["models", "download-embed"] in launch.json to download the 'nomic-embed-text-v1.5.Q5_K_M.gguf' model
+* In vs code, run and debug with the args to download embedding model
+* After download, Run and debug again after removing the args
+* Example Prompt to generate CURD API code for Departments
+```
+add CURD API and dependent service & data structure for Departments similar to SystemParameters. access code is 'AD01' for Read and 'AD02' for Add/Update/Delete
+```
+* press *Control-O key* to continue
+* first time execution will take longer to embed all coding. Subsequent run will use cache embeddings in sqllite
+* console will display all the prompts and results step by step
+* use vs code or Visual Studio to diff the code changes
+* Every run may generate a different result. Most run have compile errors. I only got ONE run that has no compile error.
+* You may try requesting re-generation of files in subsequent prompts to fix errors.
+
+## Run in non-debug mode
+* After debug sucessfully, you can run in non-debug mode from DOS Prompt
+* CD to the target dotnetEAA root folder
+* Run below DOS command (amend the PYTHONPATH to your dir-assistant's path)
 ```
 set PYTHONPATH=D:\Repos\Labs\ChatGPT\dir-assistant
 python -m dir_assistant.main
-add a Stock page with StockId:int; Description:string; Category:[Food, Toy, Furniture, Sport]; QtyOnHand:int; Price:Decimal; LastUpdateDate:Date (time is 00:00:00)
-
-git reset --hard HEAD~1
-
-add CURD API and dependent service & data structure for Departments similar to SystemParameters. access code is 'AD01' for Read and 'AD02' for Add/Update/Delete
 ```
+* python -m dir_assistant.main clear will delete the cached embedding sqllite
 
-# dir-assistant
+
+
+
+
+# Original dir-assistant Readme
 
 Chat with your current directory's files using a local or API LLM.
 

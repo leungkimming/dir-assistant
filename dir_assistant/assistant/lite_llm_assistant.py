@@ -1,6 +1,5 @@
 import sys
 import json
-import os
 
 from colorama import Fore, Style
 from litellm import completion, token_counter
@@ -65,7 +64,6 @@ class LiteLLMAssistant(GitAssistant):
                 model='azure/o1-mini',
                 api_base = "https://hkelectric-openai00.openai.azure.com/",
                 api_version = "2024-08-01-preview",
-                api_key = os.getenv('Azure_API_Key'),
                 messages=chat_history,
                 stream=False,
                 timeout=60000,
@@ -140,7 +138,6 @@ class LiteLLMAssistant(GitAssistant):
                 model='azure/o1-mini',
                 api_base = "https://hkelectric-openai00.openai.azure.com/",
                 api_version = "2024-08-01-preview",
-                api_key = os.getenv('Azure_API_Key'),
                 messages=self.chat_history,
                 stream=False,
                 timeout=60000,

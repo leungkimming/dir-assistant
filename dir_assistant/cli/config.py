@@ -68,6 +68,7 @@ CONFIG_DEFAULTS = {
         "OPENAI_API_KEY": "",
         "ANTHROPIC_API_KEY": "",
         "DEEPSEEK_API_KEY": getenv('Deepseek_API_Key'),
+        "Azure_API_Key": getenv('Azure_API_Key'),
     },
 }
 
