@@ -16,7 +16,8 @@ from dir_assistant.assistant.llama_cpp_assistant import LlamaCppAssistant
 from dir_assistant.assistant.llama_cpp_embed import LlamaCppEmbed
 from dir_assistant.cli.config import get_file_path
 
-litellm.suppress_debug_info = True
+litellm.suppress_debug_info = False
+os.environ['LITELLM_LOG'] = 'DEBUG'
 
 MODELS_PATH = os.path.expanduser("~/.local/share/dir-assistant/models")
 
@@ -180,12 +181,12 @@ see readme for more information. Exiting..."""
     llm.initialize_history()
 
     # Start file watcher
-    watcher = start_file_watcher(
-        ".", embed, ignore_paths, embed_chunk_size, llm.update_index_and_chunks
-    )
+    # watcher = start_file_watcher(
+    #     ".", embed, ignore_paths, embed_chunk_size, llm.update_index_and_chunks
+    # )
 
     # Display the startup art
-    display_startup_art(commit_to_git)
+    # display_startup_art(commit_to_git)
 
     # Initialize history for prompt input
     history = InMemoryHistory()
@@ -194,7 +195,7 @@ see readme for more information. Exiting..."""
     while True:
         # Get user input
         sys.stdout.write(
-            f"{Style.BRIGHT}{Fore.RED}You (Press ALT-Enter, OPT-Enter, or CTRL-O to submit): \n\n{Style.RESET_ALL}"
+            f"{Style.BRIGHT}{Fore.RED}You (Press CTRL-O to submit. Submit 'exit' to quit): \n\n{Style.RESET_ALL}"
         )
         # Configure key bindings for Option-Enter on macOS
         bindings = KeyBindings()

@@ -1,0 +1,12 @@
+llama-cpp-python
+faiss-cpu
+litellm
+colorama
+sqlitedict
+prompt-toolkit
+watchdog
+google-generativeai
+openai
+boto3
+dynaconf
+toml

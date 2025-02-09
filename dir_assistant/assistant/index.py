@@ -43,13 +43,21 @@ def get_files_with_contents(directory, ignore_paths, cache_db):
             if file_info and file_info["mtime"] == file_stat.st_mtime:
                 files_with_contents.append(file_info)
             else:
-                try:
-                    with open(filepath, "r") as file:
-                        contents = file.read()
-                except UnicodeDecodeError:
+                # Try different encodings
+                contents = None
+                for encoding in ['utf-8', 'latin-1', 'cp1252']:
+                    try:
+                        with open(filepath, "r", encoding=encoding) as file:
+                            contents = file.read()
+                        break
+                    except UnicodeDecodeError:
+                        continue
+                if contents is None:
                     print(
                         f"{Fore.LIGHTBLACK_EX}Skipping {filepath} because it is not a text file.{Style.RESET_ALL}"
                     )
+                    continue
+
                 file_info = {
                     "filepath": os.path.abspath(filepath),
                     "contents": contents,

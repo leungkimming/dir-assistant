@@ -558,3 +558,7 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /.pypirc
+
+# secret & model
+models/
+config.toml

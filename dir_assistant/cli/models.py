@@ -1,6 +1,7 @@
 import os
 from platform import system
 from subprocess import run
+import urllib.request
 
 from dir_assistant.cli.config import get_file_path, save_config
 
@@ -36,7 +37,15 @@ def models_download_embed(args, config_dict):
     model_path = get_file_path(
         config_dict["DIR_ASSISTANT"]["MODELS_PATH"], MODELS_DEFAULT_EMBED
     )
-    run(["wget", "-O", model_path, MODELS_DEFAULT_EMBED_URL])
+    # run(["wget", "-O", model_path, MODELS_DEFAULT_EMBED_URL])
+
+    try:
+        print(f"Downloading {MODELS_DEFAULT_EMBED_URL} to {model_path}")
+        urllib.request.urlretrieve(MODELS_DEFAULT_EMBED_URL, model_path)
+        print("Download completed successfully.")
+    except Exception as e:
+        print(f"An error occurred while downloading the model: {e}")
+
     config_dict["DIR_ASSISTANT"]["ACTIVE_EMBED_IS_LOCAL"] = True
     config_dict["DIR_ASSISTANT"]["EMBED_MODEL"] = MODELS_DEFAULT_EMBED
     save_config(config_dict)

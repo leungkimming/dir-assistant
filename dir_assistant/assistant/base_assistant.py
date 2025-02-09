@@ -80,6 +80,7 @@ class BaseAssistant:
             "role": "assistant",
             "content": temp_content,
             "tokens": self.embed.count_tokens(final_content),
+            "prefix": True,
         }
 
     def add_user_history(self, temp_content, final_content):
@@ -138,19 +139,14 @@ class BaseAssistant:
 
     def stream_chat(self, user_input):
         # Main function for streaming assistant chat to the user.
-        retries = 0
-        accepted = False
-        while retries < self.output_acceptance_retries:
-            self.run_pre_stream_processes(user_input, True)
-            stream_output = self.run_stream_processes(user_input, True)
-            accepted = self.run_post_stream_processes(user_input, stream_output, True)
-            if accepted:
-                break
-            retries += 1
-        if accepted:
-            self.run_accepted_output_processes(user_input, stream_output, True)
-        else:
-            self.run_bad_output_processes(user_input, stream_output, True)
+        self.run_pre_stream_processes(user_input, True)
+        stream_output = self.run_stream_processes(user_input, True)
+        # accepted = self.run_post_stream_processes(user_input, stream_output, True)
+
+        sys.stdout.write(
+            f"\n{Style.BRIGHT}{stream_output}{Style.RESET_ALL}\n\n"
+        )
+        sys.stdout.flush()
 
     def run_basic_chat_stream(self, user_input, relevant_full_text, write_to_stdout):
         # Add the user input to the chat history

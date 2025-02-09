@@ -1,5 +1,6 @@
 import copy
 import sys
+import json
 
 from colorama import Fore, Style
 
@@ -56,7 +57,7 @@ class CGRAGAssistant(BaseAssistant):
         if self.print_cgrag:
             sys.stdout.write(Style.BRIGHT + Fore.WHITE + "\r" + (" " * 36))
             sys.stdout.write(
-                Style.BRIGHT + Fore.WHITE + f"\r{cgrag_output}\n\n" + Style.RESET_ALL
+                Style.BRIGHT + Fore.WHITE + f"\r\nContextual Guide Output:\r{cgrag_output}\n\n" + Style.RESET_ALL
             )
             sys.stdout.write(
                 Style.BRIGHT + Fore.GREEN + "Assistant: \n\n" + Style.RESET_ALL
@@ -64,6 +65,7 @@ class CGRAGAssistant(BaseAssistant):
         else:
             sys.stdout.write(Style.BRIGHT + Fore.WHITE + "\r" + (" " * 36))
         sys.stdout.write("\r(thinking...)" + Style.RESET_ALL)
+        sys.stdout.flush()
 
     def create_cgrag_prompt(self, base_prompt):
         return f"""What information related to the included files is important to answering the following 
@@ -71,7 +73,7 @@ user prompt?
 
 User prompt: '{base_prompt}'
 
-Respond with only a list of information and concepts. Include in the list all information and concepts necessary to
+Study Readme.md if exist. Respond with only a list of information and concepts. Include in the list all information and concepts necessary to
 answer the prompt, including those in the included files and those which the included files do not contain. Your
 response will be used to create an LLM embedding that will be used in a RAG to find the appropriate files which are 
 needed to answer the user prompt. There may be many files not currently included which have more relevant information, 
@@ -83,7 +85,17 @@ function, and variable names as applicable to answering the user prompt.
     def run_stream_processes(self, user_input, write_to_stdout):
         if self.use_cgrag:
             relevant_full_text = self.build_relevant_full_text(user_input)
+            sys.stdout.write(
+                f"{Style.BRIGHT}{Fore.GREEN}\n!!! Initial Search result Length: {len(relevant_full_text)}, First 1000 characters:\n\n{Style.RESET_ALL}"
+            )
+            sys.stdout.write(f"{relevant_full_text[:1000]} ...\n\n{Style.RESET_ALL}")
+            sys.stdout.flush()
             cgrag_prompt = self.create_cgrag_prompt(user_input)
+            sys.stdout.write(Style.BRIGHT + Fore.WHITE + "\r" + (" " * 36))
+            sys.stdout.write(
+                Style.BRIGHT + Fore.GREEN + f"\r!!! concate initial search result with below as Prompt to get Contextual Guide: '{cgrag_prompt}'\n\n" + Style.RESET_ALL
+            )
+            sys.stdout.flush()
             cgrag_content = relevant_full_text + cgrag_prompt
             cgrag_history = copy.deepcopy(self.chat_history)
             cgrag_prompt_history = self.create_user_history(
@@ -92,16 +104,48 @@ function, and variable names as applicable to answering the user prompt.
             cgrag_history.append(cgrag_prompt_history)
             self.cull_history_list(cgrag_history)
             cgrag_generator = self.call_completion(cgrag_history)
-            output_history = self.create_empty_history()
-            output_history = self.run_completion_generator(
-                cgrag_generator, output_history, False
+            guidance_history = self.create_empty_history()
+            guidance_history = self.run_completion_generator(
+                cgrag_generator, guidance_history, False
             )
             relevant_full_text = self.build_relevant_full_text(
-                output_history["content"]
+                guidance_history["content"]
             )
-            self.print_cgrag_output(output_history["content"])
+            # add before full text # self.add_user_history(guidance_history["content"], guidance_history["content"])
+            relevant_full_text = "\nContext Guidance:\n" + guidance_history["content"] + "\nFile Snippets:\n" + relevant_full_text
+
+            self.print_cgrag_output(guidance_history["content"])
+            sys.stdout.write(
+                f"{Style.BRIGHT}{Fore.GREEN}\n!!! Contextual Guide Search result Length: {len(relevant_full_text)}, First 1000 characters:\n\n{Style.RESET_ALL}"
+            )
+            sys.stdout.write(f"{relevant_full_text[:8000]} ...\n\n{Style.RESET_ALL}")
             sys.stdout.flush()
         else:
             relevant_full_text = self.build_relevant_full_text(user_input)
-        prompt = self.create_prompt(user_input)
-        return self.run_basic_chat_stream(prompt, relevant_full_text, write_to_stdout)
+
+        prompt = self.create_prompt(user_input, "") # create prompt to generate a list of files to output
+        sys.stdout.write(Style.BRIGHT + Fore.WHITE + "\r" + (" " * 36))
+        sys.stdout.write(
+            Style.BRIGHT + Fore.GREEN + f"\r!!! concate Contextual Guide search result with below as prompt to list all files output:'{prompt}'\n\n" + Style.RESET_ALL
+        )
+        sys.stdout.flush()
+        first_round = self.run_basic_chat_stream(prompt, relevant_full_text, True)
+        try:
+            file_list = json.loads(first_round)
+            if isinstance(file_list, list):
+                for outfile in file_list:
+                    prompt = self.create_prompt(user_input, outfile) # create prompt for each file to be output
+                    sys.stdout.write(Style.BRIGHT + Fore.WHITE + "\r" + (" " * 36))
+                    sys.stdout.write(
+                        Style.BRIGHT + Fore.GREEN + f"\r!!! concate Contextual Guide search result with below as prompt to generate file:'{prompt}'\n\nGenerating {outfile}...\n\n" + Style.RESET_ALL
+                    )
+                    sys.stdout.flush()
+                    # self.call_completion_fc(prompt, relevant_full_text, outfile)
+                    stream_output = self.run_basic_chat_stream(prompt, relevant_full_text, False)
+                    self.run_post_stream_processes(user_input, stream_output, False)
+                return f"""files {file_list} were successfully written to folder"""
+            else:
+                return first_round
+        except json.JSONDecodeError:
+            return first_round
+

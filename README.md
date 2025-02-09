@@ -1,3 +1,14 @@
+# Windows
+```
+set PYTHONPATH=D:\Repos\Labs\ChatGPT\dir-assistant
+python -m dir_assistant.main
+add a Stock page with StockId:int; Description:string; Category:[Food, Toy, Furniture, Sport]; QtyOnHand:int; Price:Decimal; LastUpdateDate:Date (time is 00:00:00)
+
+git reset --hard HEAD~1
+
+add CURD API and dependent service & data structure for Departments similar to SystemParameters. access code is 'AD01' for Read and 'AD02' for Add/Update/Delete
+```
+
 # dir-assistant
 
 Chat with your current directory's files using a local or API LLM.
