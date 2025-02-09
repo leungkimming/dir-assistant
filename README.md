@@ -55,10 +55,14 @@ CONFIG_DEFAULTS = {
 ```
 * set LLM to non-local (API call). Set your LLM model, context window size and API Key
 
-## Test run: Target testing solution: dotnetEAA API solution
+## Test run: 
+### Target testing solution: dotnetEAA API solution
+* 'dotnetEAA_Readme.md' is the Readme.md file in the dotnetEAA API solution
+    * This give LLM an introduction to your solution's structure
+### Steps to run
 * Embedding model setup (only need to setup ONCE)
     * using "args": ["models", "download-embed"] in launch.json to download the 'nomic-embed-text-v1.5.Q5_K_M.gguf' model
-* In vs code, run and debug with the args to download embedding model
+    * In vs code, run and debug with the args to download embedding model
 * After download, Run and debug again after removing the args
 * Example Prompt to generate CURD API code for Departments
 ```
