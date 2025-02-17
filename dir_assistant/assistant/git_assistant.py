@@ -57,13 +57,12 @@ class GitAssistant(CGRAGAssistant):
                 return f"""User Prompt:
 {user_input}
 ----------------------------------
-Given the user prompt above and included file snippets, respond with the contents of the '{outfile}' file 
-that has the changes the user prompt requested. Just ONE '{outfile}' file and no other files. Do not 
-provide an introduction, summary, or conclusion. Only respond with the file's contents. Do not respond 
-with surrounding markdown. Namespace should only contain the project's name and never add subfolders to a Namespace. Add the filename of the file as 
-the first line of that file's response. Keep existing file's content by adding new coding. Always respond 
-with the entire contents of the new version of the file. Ensure white space and new lines are consistent 
-with the original.
+Given the user prompt above and included file snippets, respond with the contents of the '{outfile}' file that has the 
+changes the user prompt requested. Just ONE '{outfile}' file and no other files. Do not provide an introduction, summary, 
+or conclusion. Only respond with the file's contents. Do not respond with surrounding markdown. Namespace should only 
+contain the project's name and never add subfolders to a Namespace. Add the filename of the file as the first line of 
+that file's response. Keep existing file's content by adding new coding. Always respond with the entire contents of the 
+new version of the file. Ensure white space and new lines are consistent with the original.
 
 Example response:
 {outfile}
@@ -101,9 +100,9 @@ User prompt:
 {user_input}
 ----------------------------------
 Given the user prompt above and included Context Guidance and file snippets, list out the pathname 
-of all files that has the changes the user prompt and the Context Guidance requested. Do not respond 
-with additional words or characters or surrounding markdown. Just respond with the list of files in 
-plain text as in the example below.
+of all files that were being mentioned in the Context Guidance and may need to be updated or created. 
+Interface and acutual Implementation must be synchronized. Do not respond with additional words or 
+characters or surrounding markdown. Just respond with the list of files in plain text as in the example below.
 
 Example response:
 ["src/hello_world.tsx", "src/hello_world.css", "src/main.tsx"]

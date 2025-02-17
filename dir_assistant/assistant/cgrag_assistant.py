@@ -5,7 +5,7 @@ import json
 from colorama import Fore, Style
 
 from dir_assistant.assistant.base_assistant import BaseAssistant
-
+from prompt_toolkit import prompt as ask_prompt
 
 class CGRAGAssistant(BaseAssistant):
     def __init__(
@@ -73,13 +73,15 @@ user prompt?
 
 User prompt: '{base_prompt}'
 
-Study Readme.md if exist. Respond with only a list of information and concepts. Include in the list all information and concepts necessary to
-answer the prompt, including those in the included files and those which the included files do not contain. Your
-response will be used to create an LLM embedding that will be used in a RAG to find the appropriate files which are 
-needed to answer the user prompt. There may be many files not currently included which have more relevant information, 
-so your response must include the most important concepts and information required to accurately answer the user 
-prompt. Keep the list length to around 20 items. If the prompt is referencing code, list specific class, 
-function, and variable names as applicable to answering the user prompt.
+First, study the solution structure in Readme.md. Respond with only a list of information and concepts. 
+Include in the list all information and concepts necessary to answer the prompt, including those in the included files 
+and those which the included files do not contain. Your response will be used to create an LLM embedding that will be 
+used in a RAG to find the appropriate files which are needed to answer the user prompt. There may be many files not 
+currently included which have more relevant information, so your response must include the most important concepts and 
+information required to accurately answer the user prompt. Keep the list length to around 20 items. If the prompt is 
+referencing code, list specific class, function, and variable names as applicable to answering the user prompt. 
+Interface and the actual implementation class must be synchronized. At the end of the reply, suggest a list of files that 
+you think are affected and may need to be updated or created, including the file path besides the filename.
 """
 
     def run_stream_processes(self, user_input, write_to_stdout):
@@ -129,10 +131,22 @@ function, and variable names as applicable to answering the user prompt.
             Style.BRIGHT + Fore.GREEN + f"\r!!! concate Contextual Guide search result with below as prompt to list all files output:'{prompt}'\n\n" + Style.RESET_ALL
         )
         sys.stdout.flush()
-        first_round = self.run_basic_chat_stream(prompt, relevant_full_text, True)
+        # last parameter specifies if R1 is used
+        first_round = self.run_basic_chat_stream(prompt, relevant_full_text, False, False)
         try:
             file_list = json.loads(first_round)
-            if isinstance(file_list, list):
+            for outfile in file_list:
+                sys.stdout.write(
+                    Style.BRIGHT + Fore.WHITE + f"\r{outfile}\n" + Style.RESET_ALL
+                )
+            sys.stdout.flush()
+            sys.stdout.write(
+                f"{Style.BRIGHT}{Fore.BLUE}Generate these files? (Y/N): {Style.RESET_ALL}"
+            )
+            apply_changes = ask_prompt("", multiline=False).strip().lower()
+            if write_to_stdout:
+                sys.stdout.write("\n")
+            if apply_changes == "y" and isinstance(file_list, list):
                 for outfile in file_list:
                     prompt = self.create_prompt(user_input, outfile) # create prompt for each file to be output
                     sys.stdout.write(Style.BRIGHT + Fore.WHITE + "\r" + (" " * 36))
@@ -145,7 +159,7 @@ function, and variable names as applicable to answering the user prompt.
                     self.run_post_stream_processes(user_input, stream_output, False)
                 return f"""files {file_list} were successfully written to folder"""
             else:
-                return first_round
+                return "Task completed!"
         except json.JSONDecodeError:
             return first_round
 

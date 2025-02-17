@@ -66,7 +66,7 @@ CONFIG_DEFAULTS = {
 * After download, Run and debug again after removing the args
 * Example Prompt to generate CURD API code for Departments
 ```
-add CURD API and dependent service & data structure for Departments similar to SystemParameters. access code is 'AD01' for Read and 'AD02' for Add/Update/Delete
+add CURD API and dependent service & data structure for Department similar to SystemParameter. access code is 'AD01' for Read and 'AD02' for Add/Update/Delete
 ```
 * press *Control-O key* to continue
 * first time execution will take longer to embed all coding. Subsequent run will use cache embeddings in sqllite

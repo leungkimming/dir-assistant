@@ -157,3 +157,18 @@ class LiteLLMAssistant(GitAssistant):
     def output_file(self, file_name, program_code):
         with open(file_name, "w") as file:
             file.write(program_code)
+
+    # enable selection of R1 LLM per API call
+    def call_completion_r1(self, chat_history):
+        llm_response = completion(
+            # model=self.lite_llm_model,
+            model='deepseek/deepseek-reasoner',
+            # model='azure/o1-mini',
+            # api_base = "https://hkelectric-openai00.openai.azure.com/",
+            # api_version = "2024-08-01-preview",
+            messages=chat_history,
+            stream=False,
+            timeout=120000,
+            #max_tokens=128000,
+        )
+        return llm_response

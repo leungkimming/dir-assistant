@@ -147,8 +147,8 @@ class BaseAssistant:
             f"\n{Style.BRIGHT}{stream_output}{Style.RESET_ALL}\n\n"
         )
         sys.stdout.flush()
-
-    def run_basic_chat_stream(self, user_input, relevant_full_text, write_to_stdout):
+    # Add parameter R1 to enable selection of LLM per API call
+    def run_basic_chat_stream(self, user_input, relevant_full_text, write_to_stdout, R1=False):
         # Add the user input to the chat history
         user_content = relevant_full_text + user_input
         self.add_user_history(user_content, user_input)
@@ -157,7 +157,10 @@ class BaseAssistant:
         self.cull_history()
 
         # Get the generator from of the completion
-        completion_generator = self.call_completion(self.chat_history)
+        if R1:
+            completion_generator = self.call_completion_r1(self.chat_history)
+        else:
+            completion_generator = self.call_completion(self.chat_history)
 
         # Replace the RAG output with the user input. This reduces the size of the history for future prompts.
         self.chat_history[-1]["content"] = user_input
